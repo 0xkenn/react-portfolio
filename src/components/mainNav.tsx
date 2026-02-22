@@ -1,35 +1,43 @@
-import { Button } from './ui/button';
-import { useNavigate } from 'react-router'; // assuming you're using `react-router-dom`
+import { useNavigate } from "react-router";
 
-const mainNavItems = [
-  { name: 'Home', path: '/' },
-  { name: 'About', path: '/about' },
-  { name: 'Projects', path: '/projects' },
-  { name: 'Contact', path: '/contact' }
-];
+import { usePortfolioContent } from "@/hooks/usePortfolioContent";
+import { Button } from "@/components/ui/button";
 
 export default function MainNav() {
   const navigate = useNavigate();
+  const { data } = usePortfolioContent();
+  const siteSettings = data?.content.siteSettings;
+
+  const navItems = siteSettings?.navItems ?? [];
 
   return (
     <div className="flex items-center justify-between px-4 py-2 w-full">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold">0xkenn</span> 
+        <span className="text-lg font-bold">{siteSettings?.brandName ?? "0xkenn"}</span>
       </div>
 
-      <div className="hidden md:flex gap-5">
-        {mainNavItems.map((item, index) => (
+      <div className="hidden md:flex gap-5 items-center">
+        {navItems.map((item) => (
           <Button
-            key={index}
+            key={`${item.path}-${item.label}`}
             variant="link"
-            onClick={() => navigate(item.path)}
+            onClick={() => {
+              if (item.external) {
+                window.open(item.path, "_blank", "noopener,noreferrer");
+                return;
+              }
+              navigate(item.path);
+            }}
           >
-            {item.name}
+            {item.label}
           </Button>
         ))}
-          <Button onClick={() => window.open("https://docs.google.com/document/d/1256y-Cy_sXboqbvpiMf-pVD8hbM3a-DEOMTaLAcopoM/edit?usp=sharing", "_blank")}>
+
+        {siteSettings?.resumeUrl ? (
+          <Button onClick={() => window.open(siteSettings.resumeUrl, "_blank", "noopener,noreferrer")}>
             Resume
           </Button>
+        ) : null}
       </div>
     </div>
   );
